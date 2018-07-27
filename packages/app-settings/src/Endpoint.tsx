@@ -6,7 +6,7 @@ import { I18nProps as Props } from '@polkadot/ui-app/types';
 import React from 'react';
 import Input from '@polkadot/ui-app/Input';
 import classes from '@polkadot/ui-app/util/classes';
-
+import keyring from '@polkadot/ui-keyring/index';
 import translate from './translate';
 
 import InputEndpoint from '@polkadot/ui-app/InputEndpoint';
@@ -22,9 +22,12 @@ const knownEndpoints = [
   'ws://127.0.0.1:9944'
 ]
 
+if (process.env.WS_URL)
+    knownEndpoints.push(process.env.WS_URL)
+
 class Endpoint extends React.PureComponent<Props, State> {
   state: State = {
-    endpoint: knownEndpoints[0],
+    endpoint: process.env.WS_URL || knownEndpoints[0],
     endpoints: knownEndpoints,
     isError: false
   };
@@ -44,7 +47,7 @@ class Endpoint extends React.PureComponent<Props, State> {
 
   renderInput () {
     const { t } = this.props;
-    const { endpoint, endpoints, isError } = this.state;
+    const { endpoint, endpoints, isError = true} = this.state;
 
     return (
       <div>
@@ -65,12 +68,22 @@ class Endpoint extends React.PureComponent<Props, State> {
   }
 
   isEndpointValid = (endpoint: string): boolean => {
+    console.log(endpoint);
     const regexp = /^wss?:\/\/([A-Z0-9\.-]{3,})(\.[A-Z]{3})?((\:)(\d{2,5}))?$/gmi
+
     return regexp.test(endpoint)
   }
 
   onChangeData = (endpoint: string): void => {
-    this.setState({ endpoint, isError: !this.isEndpointValid(endpoint) });
+    const isValid = this.isEndpointValid(endpoint)
+    this.setState({ endpoint, isError: !isValid });
+
+
+    // if (isValid)
+    //   keyring.saveEndpoint(endpoint);
+
+    if (!isValid)
+       alert('asdf')
   }
 }
 

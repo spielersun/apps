@@ -7,6 +7,8 @@ import { BareProps } from '../types';
 import './InputEndpoint.css';
 
 import React from 'react';
+import createOptionHeader from '@polkadot/ui-keyring/options/header';
+import keyring from '@polkadot/ui-keyring/index';
 
 import Dropdown from '../Dropdown';
 import classes from '../util/classes';
@@ -56,10 +58,10 @@ const transform = (value: string): string => {
 // NOTE: We are not extending Component here since the options may change in the keyring (which needs a re-render), however the input props will be the same (so, no PureComponent with shallow compare here)
 export default class InputEndpoint extends React.Component<Props, State> {
   getDefaultValues = (): EndpointOptions => {
-    const { defaultValues = [], value } = this.props;
-
+    const { defaultValues } = this.props;
+    const _defaultValues = defaultValues || []
     var res: EndpointOptions = []
-    defaultValues.map((name, index) => {
+    _defaultValues.map((name, index) => {
       res.push({
         name,
         key: index.toString(),
@@ -81,7 +83,7 @@ export default class InputEndpoint extends React.Component<Props, State> {
       style,
       withLabel
     } = this.props;
-    const { defaultValues, value } = this.props;
+    const { defaultValues = [], value } = this.props;
 
     return (
       <Dropdown
@@ -93,29 +95,54 @@ export default class InputEndpoint extends React.Component<Props, State> {
         onChange={onChange}
         onSearch={this.onSearch}
         style={style}
+        transform={transform}
         value={value}
         withLabel={withLabel}
       />
     );
   }
 
+  isValidEndpoint(s) {
+    return true
+  }
+
   onSearch = (filteredOptions: EndpointOptions, query: string): EndpointOptions => {
     const { isInput = true } = this.props;
-    const { defaultValues = [] } = this.state;
+    const { defaultValues } = this.state || { defaultValues: [] };
     const queryLower = query.toLowerCase();
+
+    // check if the input is one of the options
     const matches = filteredOptions.filter((item) => {
       if (item.value === null) {
         return true;
       }
 
       const { name, value } = item;
-      const hasMatch = name.toLowerCase().indexOf(queryLower) !== -1 ||
-      value.toLowerCase().indexOf(queryLower) !== -1;
+      const hasMatch =
+        name.toLowerCase().indexOf(queryLower) !== -1 ||
+        value.toLowerCase().indexOf(queryLower) !== -1;
 
       return hasMatch;
     });
 
     const valueMatches = matches.filter((s) => s !== null);
+
+    if (isInput && valueMatches.length === 0) {
+      const isValidEp = this.isValidEndpoint(query);
+
+      if (isValidEp) {
+        if (!matches.find((item) => item.key === RECENT_KEY)) {
+          matches.push(
+            createOptionHeader('Recent')
+          );
+        }
+
+        matches.push(
+          // keyring.saveRecentEndpoint(query)
+          query
+        );
+      }
+    }
 
     return matches.filter((item, index) => {
       const isLast = index === matches.length - 1;
@@ -126,7 +153,7 @@ export default class InputEndpoint extends React.Component<Props, State> {
         return true;
       }
 
-      return false;
+      return true;
     });
   }
 }
