@@ -77,6 +77,10 @@ class Params<T, S extends SectionItem<T>> extends React.PureComponent<Props<S>, 
     const { className, isDisabled, item: { params }, overrides, style } = this.props;
     const { handlers = [], values = this.props.values } = this.state;
 
+    console.log('ui-app/Params/index - params: ', params);
+    console.log('ui-app/Params/index - overrides: ', overrides);
+    console.log('ui-app/Params/index - values: ', values);
+
     if (!values || values.length === 0 || params.length === 0) {
       return null;
     }

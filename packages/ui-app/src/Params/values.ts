@@ -10,10 +10,17 @@ import isUndefined from '@polkadot/util/is/undefined';
 import getInitValue from './initValue';
 
 export default function values (params: Params): Array<RawParam> {
+  console.log('ui-app/Params/values.ts - params: ', params);
+
   const types = params.map(({ type }) => type);
 
+  console.log('ui-app/Params/values.ts - types (from mapping over params): ', types);
+
   return types.map((type): RawParam => {
+
     if (Array.isArray(type)) {
+      console.log('ui-app/Params/values.ts - type is an array (found when mapping over types): ', type);
+
       if (type.length !== 1) {
         console.error('Unable to determine default values for tuple type', type);
 
@@ -49,6 +56,8 @@ export default function values (params: Params): Array<RawParam> {
       // FIXME Arrays are currently not valid as inputs, no rendered
       }, { isValid: false, type, value });
     }
+
+    console.log('ui-app/Params/values.ts - type is NOT an array (found when mapping over types): ', type);
 
     const value = getInitValue(type);
 

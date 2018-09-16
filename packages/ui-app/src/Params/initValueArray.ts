@@ -8,6 +8,8 @@ import { RawParam$Value } from './types';
 import getInitValue from './initValue';
 
 export default function getInitValueArray (type: Param$Type[]): RawParam$Value | Array<RawParam$Value> {
+  console.log('ui-app/Params/initValueArray - type: ', type);
+
   // NOTE special cases for where we have a known override formatter. The only horrible thing with
   // this atm is that we need to add the same override in ./values.ts - which is actually horrible,
   // need a single place for both the actual raw values and wrapped values

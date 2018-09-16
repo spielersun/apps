@@ -58,6 +58,7 @@ export default function getInitValue (type: Param$Types): RawParam$Value | Array
 
     default:
       if (Array.isArray(type)) {
+        console.log('ui-app/Params/initValue - type (detected an array so making recursive call): ', type);
         return getInitValueArray(type as Array<Param$Type>);
       }
 
