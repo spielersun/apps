@@ -56,6 +56,24 @@
 	flex: 0 1 100%;
 }
 
+.ui--signer-Signer-Content-address {
+  flex: 0 1;
+  padding: 2em 0;
+}
+
+.ui--signer-Signer-Content-address .ui--AddressSummary {
+  text-align: center;
+}
+
+.ui--signer-Signer-Content-data {
+  flex: 1 1;
+}
+
+.ui--signer-Signer-Content-info {
+  display: flex;
+  flex-direction: row;
+}
+
 .ui--signer-Status {
   display: inline-block;
   position: fixed;

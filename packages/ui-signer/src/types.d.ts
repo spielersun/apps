@@ -14,6 +14,17 @@ export type EncodedMessage = {
   values: Array<Param$Values>
 };
 
+// FIXME - this is a duplicate of Fees in app-transfer
+export type Fees = {
+  hasAvailable: boolean,
+  isCreation: boolean,
+  isNoEffect: boolean,
+  isRemovable: boolean,
+  isReserved: boolean,
+  txfees: BN,
+  txtotal: BN
+};
+
 export type QueueTx$Status = 'cancelled' | 'completed' | 'error' | 'incomplete' | 'queued' | 'sending' | 'sent';
 
 export type QueueTx$Id = number;
