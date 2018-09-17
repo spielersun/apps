@@ -25,20 +25,18 @@ import withObservable from '@polkadot/ui-react-rx/with/observable';
 import translate from './translate';
 
 type Props = I18nProps & {
-  children?: React.ReactNode,
-  fees: RxFees,
-  value: QueueTx
-};
-
-// duplicate of Transfer.tsx
-type State = {
   amount: BN,
   from: Uint8Array | null,
+  children?: React.ReactNode,
+  fees: RxFees,
+  onChangeAmount: (amount: string) => void,
+  onChangeFees: (txfees: Fees) => void,
+  onChangeFrom: (from: Uint8Array) => void,
+  onChangeTo: (to: Uint8Array) => void,
   to: Uint8Array | null,
-  txfees: Fees
+  txfees: Fees,
+  value: QueueTx
 };
-
-const ZERO = new BN(0);
 
 function findExtrinsic (sectionId: number, methodId: number): { method: string | undefined, section: string | undefined } {
   const section = Object.values(extrinsics).find(({ index }) =>
@@ -59,29 +57,11 @@ function findExtrinsic (sectionId: number, methodId: number): { method: string |
   };
 }
 
-class Extrinsic extends React.PureComponent<Props, State> {
-  state: State;
-
-  constructor (props: Props) {
-    super(props);
-
-    // duplicate of Transfer.tsx
-    this.state = {
-      amount: ZERO,
-      from: null,
-      to: null,
-      txfees: {
-        hasAvailable: false,
-        txtotal: ZERO
-      } as Fees
-    };
-  }
-
+class Extrinsic extends React.PureComponent<Props> {
   render () {
-    const { children, fees, t, value: { nonce = new BN(0), publicKey, values: [_value] } } = this.props;
+    const { amount, children, fees, from, onChangeAmount, onChangeFees, onChangeFrom, onChangeTo, t, to, txfees: { hasAvailable }, value: { nonce = new BN(0), publicKey, values: [_value] } } = this.props;
     // TODO - `from` from State is omitted since already have publicKey to obtain address from,
     // so do we need `from` stored in state at all?
-    const { amount, to, txfees: { hasAvailable } } = this.state;
 
     const unknown = t('decoded.unknown', {
       defaultValue: 'unknown'
@@ -94,6 +74,7 @@ class Extrinsic extends React.PureComponent<Props, State> {
     const { method, section } = value
       ? findExtrinsic(value[0], value[1])
       : defaultExtrinsic;
+    // TODO - should I just be passing `to` and `from` passed via props to renderAddress? or use publicKey from value/currentItem?
     const fromAddress = publicKey && addressEncode(publicKey as Uint8Array);
     const toAddress = to && addressEncode(to as Uint8Array);
 
@@ -113,7 +94,7 @@ class Extrinsic extends React.PureComponent<Props, State> {
                 label={t('from', {
                   defaultValue: 'transfer from my account'
                 })}
-                onChange={this.onChangeFrom}
+                onChange={onChangeFrom}
                 type='account'
               />
             </div>
@@ -122,7 +103,7 @@ class Extrinsic extends React.PureComponent<Props, State> {
                 label={t('to', {
                   defaultValue: 'to the recipient address'
                 })}
-                onChange={this.onChangeTo}
+                onChange={onChangeTo}
                 type='all'
               />
             </div>
@@ -137,7 +118,7 @@ class Extrinsic extends React.PureComponent<Props, State> {
                   defaultValue: 'send a value of'
                 })}
                 min={0}
-                onChange={this.onChangeAmount}
+                onChange={onChangeAmount}
                 type='number'
               />
               <FeeDisplay
@@ -146,19 +127,8 @@ class Extrinsic extends React.PureComponent<Props, State> {
                 fees={fees}
                 from={fromAddress}
                 to={to}
-                onChange={this.onChangeFees}
+                onChange={onChangeFees}
               />
-              {/* <QueueConsumer>
-                {({ queueExtrinsic }: QueueProps) => (
-                  <Submit
-                    isDisabled={!hasAvailable}
-                    amount={amount}
-                    from={fromAddress}
-                    to={toAddress}
-                    queueExtrinsic={queueExtrinsic}
-                  />
-                )}
-              </QueueConsumer> */}
             </div>
             {toAddress ? this.renderAddress(toAddress) : null}
           </div>
@@ -204,22 +174,6 @@ class Extrinsic extends React.PureComponent<Props, State> {
         />
       </div>
     );
-  }
-
-  private onChangeAmount = (amount: string) => {
-    this.setState({ amount: new BN(amount || 0) });
-  }
-
-  private onChangeFrom = (from: Uint8Array) => {
-    this.setState({ from });
-  }
-
-  private onChangeTo = (to: Uint8Array) => {
-    this.setState({ to });
-  }
-
-  private onChangeFees = (txfees: Fees) => {
-    this.setState({ txfees });
   }
 }
 
