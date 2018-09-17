@@ -94,7 +94,7 @@ class Nominating extends React.PureComponent<Props> {
           defaultValue: 'Nominate Validator'
         })}
       </Modal.Header>,
-      <Modal.Content className='ui--signer-Signer-Content' key='content'>
+      <Modal.Content className='ui--signer-Signer-Content-wrapper' key='content'>
         <Input
           className='medium'
           isError={!isNomineeValid}

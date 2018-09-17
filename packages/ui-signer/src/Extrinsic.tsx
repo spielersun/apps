@@ -10,8 +10,10 @@ import React from 'react';
 import { Trans } from 'react-i18next';
 
 import extrinsics from '@polkadot/extrinsics';
+import AddressMini from '@polkadot/ui-app/AddressMini';
+import AddressSummary from '@polkadot/ui-app/AddressSummary';
+import CopyButton from '@polkadot/ui-app/CopyButton';
 import Modal from '@polkadot/ui-app/Modal';
-import IdentityIcon from '@polkadot/ui-react/IdentityIcon';
 import u8aToHex from '@polkadot/util/u8a/toHex';
 import addressEncode from '@polkadot/util-keyring/address/encode';
 
@@ -58,29 +60,38 @@ class Extrinsic extends React.PureComponent<Props> {
           defaultValue: 'Submit Transaction'
         })}
       </Modal.Header>,
-      <Modal.Content className='ui--signer-Signer-Content' key='content'>
-        <div className='ui--signer-Signer-Decoded'>
-          <div className='expanded'>
-            <p>
-              <Trans i18nKey='decoded.short'>
-                You are about to sign a message from <span className='code'>{from}</span> calling <span className='code'>{section}.{method}</span> with an index of <span className='code'>{nonce.toString()}</span>
-              </Trans>
-            </p>
-            <p>
-              {t('decoded.data', {
-                defaultValue: 'The encoded parameters contains the data'
-              })}
-            </p>
-            <p className='code'>
-              {u8aToHex(value, 512)}
-            </p>
-          </div>
-          <IdentityIcon
-            className='icon'
+      <Modal.Content className='ui--signer-Signer-Content-wrapper' key='content'>
+        <div className='ui--signer-Signer-Content'>
+          <AddressMini
+            isShort
+            value={from}
+          >
+            <CopyButton />
+          </AddressMini>
+          <AddressSummary
+            withBalance={false}
+            withNonce={false}
             value={from}
           />
+          <div className='ui--signer-Signer-Decoded'>
+            <div className='expanded'>
+              <p>
+                <Trans i18nKey='decoded.short'>
+                  You are about to sign a message from <span className='code'>{from}</span> calling <span className='code'>{section}.{method}</span> with an index of <span className='code'>{nonce.toString()}</span>
+                </Trans>
+              </p>
+              <p>
+                {t('decoded.data', {
+                  defaultValue: 'The encoded parameters contains the data'
+                })}
+              </p>
+              <p className='code'>
+                {u8aToHex(value, 512)}
+              </p>
+            </div>
+          </div>
+          {children}
         </div>
-        {children}
       </Modal.Content>
     ];
   }
