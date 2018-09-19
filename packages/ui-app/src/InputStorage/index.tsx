@@ -12,7 +12,6 @@ import { I18nProps } from '../types';
 import '../InputExtrinsic/InputExtrinsic.css';
 
 import React from 'react';
-
 import map from '@polkadot/storage';
 
 import classes from '../util/classes';
@@ -85,6 +84,8 @@ class InputStorage extends React.PureComponent<Props, State> {
     const { onChange } = this.props;
     const { value: { name, section } } = this.state;
 
+    console.log('index.tsx - onKeyChange - section, name', value.section, value.name);
+
     if (value.section === section && value.name === name) {
       return;
     }
@@ -96,6 +97,8 @@ class InputStorage extends React.PureComponent<Props, State> {
 
   onSectionChange = (newSection: Storage$Sections): void => {
     const { value: { section } } = this.state;
+
+    console.log('index.tsx - onSectionChange', newSection);
 
     if (newSection === section) {
       return;

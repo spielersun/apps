@@ -9,7 +9,6 @@ import { RawParams } from '@polkadot/ui-app/Params/types';
 import { StorageQuery } from './types';
 
 import React from 'react';
-
 import storage from '@polkadot/storage';
 import Button from '@polkadot/ui-app/Button';
 import InputStorage from '@polkadot/ui-app/InputStorage';
@@ -42,6 +41,8 @@ class Selection extends React.PureComponent<Props, State> {
   render () {
     const { t } = this.props;
     const { isValid, key } = this.state;
+
+    console.log('Selection.tsx - state: ', this.state);
 
     return (
       <section className='storage--Selection storage--actionrow'>
@@ -81,6 +82,8 @@ class Selection extends React.PureComponent<Props, State> {
             !isUndefined(params[index]) &&
             !isUndefined(params[index].value) &&
             params[index].isValid, true);
+
+        console.log('Selection.tsx - newState', newState);
 
         return {
           isValid,
