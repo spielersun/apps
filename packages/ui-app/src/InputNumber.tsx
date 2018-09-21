@@ -137,12 +137,18 @@ class InputNumber extends React.PureComponent<Props, State> {
 
   private onChange = (value: string): void => {
     const { onChange } = this.props;
+    let isValid = false;
 
     try {
       const valueBN = new BN(value || 0);
-      const isValid = this.isValidNumber(value);
 
-      this.setState({ isValid });
+      if (value === '') {
+        isValid = false;
+        console.log('cannot propagate !isValid up to parent component without being able to pass isValid as argument to onChange to disable the submit button');
+      } else {
+        isValid = this.isValidNumber(value);
+        this.setState({ isValid });
+      }
 
       if (!onChange || !isValid) {
         return;
@@ -161,6 +167,11 @@ class InputNumber extends React.PureComponent<Props, State> {
     // store previous input field in state incase user pastes invalid value and we need to revert the input value
     this.setState({ previousValue });
 
+    // prevent duplicate 0's (entry of another 0 when existing value is 0)
+    if (previousValue[0] === '0' && event.key === KEYS.ZERO) {
+      event.preventDefault();
+    }
+
     if (KEYS_PRE.includes(event.key)) {
       this.setState({ isPreKeyDown: true });
     }
@@ -173,10 +184,19 @@ class InputNumber extends React.PureComponent<Props, State> {
     }
   }
 
-  private onKeyUp = (key: string): void => {
-    if (KEYS_PRE.includes(key)) {
+  private onKeyUp = (event: React.KeyboardEvent<Element>): void => {
+    const { value: newValue } = event.target as HTMLInputElement;
+
+    if (KEYS_PRE.includes(event.key)) {
       this.setState({ isPreKeyDown: false });
     }
+
+    // reset the value to 0 if first digit of new value is 0 and the user entered a digit after it
+    if (newValue[0] === '0' && newValue.length > 1) {
+      (event.target as HTMLInputElement).value = '0';
+    }
+
+    console.log(event.target.value);
   }
 }
 
