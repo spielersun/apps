@@ -2,13 +2,14 @@
 // This software may be modified and distributed under the terms
 // of the ISC license. See the LICENSE file for details.
 
-import { I18nProps } from '@polkadot/ui-app/types';
+import { BitLength, I18nProps } from '@polkadot/ui-app/types';
 import { RxFees } from '@polkadot/ui-react-rx/ApiObservable/types';
 import { QueueProps } from '@polkadot/ui-signer/types';
 import { Fees } from './types';
 
 import BN from 'bn.js';
 import React from 'react';
+import { BitLengthOption } from '@polkadot/ui-app/constants';
 import AddressSummary from '@polkadot/ui-app/AddressSummary';
 import InputAddress from '@polkadot/ui-app/InputAddress';
 import InputNumber from '@polkadot/ui-app/InputNumber';
@@ -30,6 +31,8 @@ type State = {
   to: Uint8Array | null,
   txfees: Fees
 };
+
+const DEFAULT_BITLENGTH = BitLengthOption.CHAIN_SPEC as BitLength;
 
 const ZERO = new BN(0);
 
@@ -80,6 +83,7 @@ class Transfer extends React.PureComponent<Props, State> {
           {this.renderAddress(from)}
           <div className='transfer--Transfer-data'>
             <InputNumber
+              bitLength={DEFAULT_BITLENGTH}
               isError={!hasAvailable}
               label={t('transfer.amount', {
                 defaultValue: 'send a value of'
