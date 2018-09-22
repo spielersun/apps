@@ -180,6 +180,36 @@ class InputNumber extends React.PureComponent<Props, State> {
     // restrict input of certain keys
     const isValid = this.isValidKey(event, isPreKeyDown);
 
+    // obtain the current cursor index position in the input field
+    // i.e. initial index is 0
+    const previousInputCursorIndex = event.target.value.slice(0, event.target.selectionStart).length;
+
+    // obtain the value at the current cursor index position
+    // i.e. value on LHS of the index, when in index 0 the value is ''
+    const previousCursorIndexLHSValue = event.target.value.charAt(previousInputCursorIndex - 1);
+
+    console.log('previousInputCursorIndex, previousCursorIndexLHSValue', previousInputCursorIndex, previousCursorIndexLHSValue);
+
+    // if previousValue is 0, and cursor index is >= 1
+    if (previousValue[0] === '0' && inputCursorIndex >= 1) {
+      // allow cut, copy, paste, select all
+      // do not allow integer input
+      if (!isNaN(Number(event.key)) || isPaste(event.key, isPreKeyDown)) {
+        event.preventDefault();
+      }
+    }
+
+    // // reset the value to 0, if previousValue is not 0 (since not restricted earlier from being deleted), 
+    // // and cursor index is == 1, and key is backspace
+    // if (previousValue[0] !== '0' && inputCursorIndex === 1 && event.key === KEYS.BACKSPACE) {
+    //   (event.target as HTMLInputElement).value = '0';
+    // }
+
+    // reset the value to 0, if previousValue is not 0 (since not restricted earlier from being deleted)
+    // and cursor index is any, and isSelectAll, and key is backspace
+
+    console.log(event.target.value);
+
     if (!isValid) {
       event.preventDefault();
     }
@@ -192,12 +222,28 @@ class InputNumber extends React.PureComponent<Props, State> {
       this.setState({ isPreKeyDown: false });
     }
 
-    // reset the value to 0 if first digit of new value is 0 and the user entered a digit after it
-    if (newValue[0] === '0' && newValue.length > 1) {
+    // obtain the current cursor index position in the input field
+    // i.e. initial index is 0
+    const inputCursorIndex = event.target.value.slice(0, event.target.selectionStart).length;
+
+    // obtain the value at the current cursor index position
+    // i.e. value on LHS of the index, when in index 0 the value is ''
+    const currentCursorIndex = event.target.value.charAt(inputCursorIndex - 1);
+
+
+    console.log('XXinputCursorIndex: ', inputCursorIndex);
+    // reset the value to 0, if newValue first char not 0 (since not restricted earlier from being deleted), 
+    // and cursor index is == 1, and key is backspace
+    if (newValue[0] !== '0' && event.target.value.length === 1 && event.key === KEYS.BACKSPACE) {
       (event.target as HTMLInputElement).value = '0';
     }
 
-    console.log(event.target.value);
+    // // reset the value to 0 if first digit of new value is 0 and the user entered a digit after it
+    // if (newValue[0] === '0' && newValue.length > 1) {
+    //   (event.target as HTMLInputElement).value = '0';
+    // }
+
+    // console.log(event.target.value);
   }
 }
 
