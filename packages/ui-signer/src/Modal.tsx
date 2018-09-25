@@ -4,8 +4,9 @@
 
 import { ApiProps } from '@polkadot/ui-react-rx/types';
 import { I18nProps, BareProps } from '@polkadot/ui-app/types';
-import { QueueTx, QueueTx$MessageSetStatus } from './types';
+import { Fees, QueueTx, QueueTx$MessageSetStatus } from './types';
 
+import BN from 'bn.js';
 import React from 'react';
 import Button from '@polkadot/ui-app/Button';
 import Modal from '@polkadot/ui-app/Modal';
@@ -31,10 +32,16 @@ type UnlockI18n = {
 };
 
 type State = {
+  amount: BN,
   currentItem?: QueueTx,
+  from: Uint8Array | null,
   password: string,
+  to: Uint8Array | null,
+  txfees: Fees,
   unlockError: UnlockI18n | null
 };
+
+const ZERO = new BN(0);
 
 class Signer extends React.PureComponent<Props, State> {
   state: State;
@@ -43,7 +50,14 @@ class Signer extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
+      amount: ZERO,
+      from: null,
       password: '',
+      to: null,
+      txfees: {
+        hasAvailable: false,
+        txtotal: ZERO
+      } as Fees,
       unlockError: null
     };
   }
@@ -63,8 +77,15 @@ class Signer extends React.PureComponent<Props, State> {
       );
 
     return {
+      amount: ZERO,
       currentItem: nextItem,
+      from: null,
       password: isSame ? password : '',
+      to: null,
+      txfees: {
+        hasAvailable: false,
+        txtotal: ZERO
+      } as Fees,
       unlockError: isSame ? unlockError : null
     };
   }
@@ -98,7 +119,7 @@ class Signer extends React.PureComponent<Props, State> {
 
   renderButtons () {
     const { t } = this.props;
-    const { currentItem: { rpc: { isSigned = false } = {} } = {} } = this.state;
+    const { currentItem: { rpc: { isSigned = false } = {} } = {}, txfees: { hasAvailable } } = this.state;
 
     return (
       <Modal.Actions>
@@ -115,6 +136,7 @@ class Signer extends React.PureComponent<Props, State> {
           <div>
             <Button
               className='ui--signer-Signer-Submit'
+              isDisabled={!hasAvailable}
               isPrimary
               onClick={this.onSend}
               tabIndex={2}
@@ -135,14 +157,24 @@ class Signer extends React.PureComponent<Props, State> {
   }
 
   renderContent () {
-    const { currentItem } = this.state;
+    const { amount, currentItem, from, to, txfees } = this.state;
 
     if (!currentItem) {
       return null;
     }
 
     return (
-      <Extrinsic value={currentItem}>
+      <Extrinsic
+        amount={amount}
+        from={from}
+        onChangeAmount={this.onChangeAmount}
+        onChangeFees={this.onChangeFees}
+        onChangeFrom={this.onChangeFrom}
+        onChangeTo={this.onChangeTo}
+        to={to}
+        txfees={txfees}
+        value={currentItem}
+      >
         {this.renderUnlock()}
       </Extrinsic>
     );
@@ -190,11 +222,27 @@ class Signer extends React.PureComponent<Props, State> {
     return null;
   }
 
+  onChangeAmount = (amount: string) => {
+    this.setState({ amount: new BN(amount || 0) });
+  }
+
+  onChangeFrom = (from: Uint8Array) => {
+    this.setState({ from });
+  }
+
+  onChangeFees = (txfees: Fees) => {
+    this.setState({ txfees });
+  }
+
   onChangePassword = (password: string): void => {
     this.setState({
       password,
       unlockError: null
     });
+  }
+
+  onChangeTo = (to: Uint8Array) => {
+    this.setState({ to });
   }
 
   onKeyDown = async (event: React.KeyboardEvent<Element>): Promise<any> => {
