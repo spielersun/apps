@@ -35,6 +35,8 @@ const ZERO_BALANCE = {
 // FIXME Ok, this is really not cool. Based on the actual transaction we should calculate the size. However currently bacause of the "fully distant" nature of the signer component, we cannot really properly calculate the final size. So count it... and then fix it. (This needs to be sorted)
 const TRANSFER_SIZE = 156;
 
+const MIN_STAKING_THRESHOLD = 100; // just an arbitrary placeholder for now.
+
 class FeeDisplay extends React.PureComponent<Props, State> {
   constructor (props: Props) {
     super(props);
@@ -45,6 +47,8 @@ class FeeDisplay extends React.PureComponent<Props, State> {
       isNoEffect: false,
       isRemovable: false,
       isReserved: false,
+      isReclaim: false,
+      isBelowStakeThreshold: false,
       txfees: ZERO,
       txtotal: ZERO
     };
@@ -70,12 +74,17 @@ class FeeDisplay extends React.PureComponent<Props, State> {
     const isRemovable = balanceFrom.votingBalance.sub(txtotal).lte(fees.existentialDeposit);
     const isReserved = balanceFrom.freeBalance.isZero() && balanceFrom.reservedBalance.gtn(0);
 
+    const isReclaim = from === to;
+    const isBelowStakeThreshold = amount < MIN_STAKING_THRESHOLD;
+
     return {
       hasAvailable,
       isCreation,
       isNoEffect,
       isRemovable,
       isReserved,
+      isReclaim,
+      isBelowStakeThreshold,
       txfees,
       txtotal
     };
@@ -144,6 +153,23 @@ class FeeDisplay extends React.PureComponent<Props, State> {
                 creationFee: fees.creationFee.toString()
               }
             })
+          : undefined
+        }{
+          isReclaim
+          ? t('fees.reclaim', {
+            defaultValue: 'A fee of {{relaimFee}} will be deducted from the sender to reclaim the transaction.',
+            replace: {
+              creationFee: fees.reclaimFee.toString()
+            }
+          })
+          : undefined
+        }{
+          isBelowStakeThreshold
+          ? t('fees.belowStakeThreshold', {
+            defaultValue: 'A fee of {{belowStakeThresholdFee}} will be deducted from the sender as the attempted amount to stake is below the staking threshold.',
+            replace: {
+              creationFee: fees.belowStakeThresholdFee.toString()
+            }
           : undefined
         }
       </article>,
