@@ -131,12 +131,22 @@ class Creator extends React.PureComponent<Props, State> {
         let newAddress = address;
 
         try {
-          newAddress = addressEncode(
-            addressDecode(address)
-          );
           isAddressValid = keyring.isAvailable(newAddress);
         } catch (error) {
           isAddressValid = false;
+
+          //Change Component to Editor
+          console.log("HEY, I KNOW THIS ADDRESS!");
+          this.onFamiliar();
+        }
+
+        try {
+          newAddress = addressEncode(addressDecode(address));
+        } catch (error) {
+          isAddressValid = false;
+
+          //Open a modal may be?
+          console.log("HEY, THIS IS FAKE!");
         }
 
         const isNameValid = !!name;
@@ -165,6 +175,15 @@ class Creator extends React.PureComponent<Props, State> {
     const { address, name } = this.state;
 
     keyring.saveAddress(address, { name });
+    InputAddress.setLastValue('address', address);
+
+    onCreateAddress();
+  }
+
+  onFamiliar = (): void => {
+    const { onCreateAddress } = this.props;
+    const { address, name } = this.state;
+
     InputAddress.setLastValue('address', address);
 
     onCreateAddress();

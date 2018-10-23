@@ -11,24 +11,25 @@ import Button from '@polkadot/ui-app/Button';
 import Input from '@polkadot/ui-app/Input';
 import AddressSummary from '@polkadot/ui-app/AddressSummary';
 import InputAddress from '@polkadot/ui-app/InputAddress';
+import ListAddress from '@polkadot/ui-app/ListAddress';
 import keyring from '@polkadot/ui-keyring/index';
 
 import Forgetting from './Forgetting';
 import translate from './translate';
 
 type Props = I18nProps & {
-  readyToForget?: boolean,
-  choosenAddress: string
+  onChooseItem: () => void
 };
 
 type State = {
   current: KeyringAddress | null,
   editedName: string,
   isEdited: boolean,
-  isForgetOpen: boolean
+  isForgetOpen: boolean,
+  //isItemForgetable: boolean
 };
 
-class Editor extends React.PureComponent<Props, State> {
+class List extends React.PureComponent<Props, State> {
   state: State;
 
   constructor (props: Props) {
@@ -37,28 +38,12 @@ class Editor extends React.PureComponent<Props, State> {
     this.state = this.createState(null);
   }
 
-  //componentDidMount(){
-  //  if(this.props.readyToForget){
-      //console.log("Forgetable!");
-      //Timeout, Leak (:
-      //this.toggleForget();
-  //  }
+  //componentDidMount() {
+  //  this.setState({isItemForgetable:true});
   //}
 
   render () {
     const { isForgetOpen, current } = this.state;
-
-    console.log(this.props.readyToForget);
-    //if(this.props.readyToForget){
-    //  if(!this.state.dontForgetThisAddress){
-    //    console.log("FORGET ME!");
-    //    this.toggleForget();
-    //    this.nextState({ current } as State);
-    //  } else {
-    //    console.log("NOTHING TO SEE HERE, MOVE ALONG!");
-    //  }
-    //}
-
     return (
       <div className='addresses--Editor'>
         <Forgetting
@@ -68,7 +53,6 @@ class Editor extends React.PureComponent<Props, State> {
           currentAddress={current}
         />
         {this.renderData()}
-        {this.renderButtons()}
       </div>
     );
   }
@@ -112,58 +96,25 @@ class Editor extends React.PureComponent<Props, State> {
   }
 
   renderData () {
-    const { t, choosenAddress } = this.props;
+    const { t, onChooseEditPanel, onChooseForgetPanel } = this.props;
     const { current, editedName } = this.state;
 
-    let address = current
+    const address = current
       ? current.address()
       : undefined;
 
-    if(choosenAddress !== ''){
-      address = choosenAddress;
-    }
-
     return (
-      <div className='ui--grid'>
-        <AddressSummary
-          className='shrink'
-          value={address || ''}
-        />
-        <div className='grow'>
-          <div className='ui--row'>
-            <InputAddress
-              className='full'
-              hideAddress
-              isDisabled={true}
-              label={t('editor.select', {
-                defaultValue: 'edit the selected name'
-              })}
-              onChange={this.onChangeAddress}
-              type='address'
-              value={address}
-            />
-            <Input
-              isDisabled={true}
-              className='full'
-              label={t('editor.name', {
-                defaultValue: 'the address'
-              })}
-              onChange={this.onChangeName}
-              value={address}
-            />
-          </div>
-          <div className='ui--row'>
-            <Input
-              className='full'
-              label={t('editor.name', {
-                defaultValue: 'identified by the name'
-              })}
-              onChange={this.onChangeName}
-              value={editedName}
-            />
-          </div>
-        </div>
-      </div>
+        <ListAddress
+            showEditPanel = {(editAddress:any) => this.props.onChooseEditPanel(editAddress)}
+            showForgetPanel = {(deleteAddress:any) => this.props.onChooseForgetPanel(deleteAddress)}
+            className='full'
+            isInput={false}
+            label={t('editor.select', {
+                defaultValue: 'edit the selected address'
+            })}
+            onOpenEdit={this.onChooseItem}
+            type='address'
+            value={address} />
     );
   }
 
@@ -176,7 +127,8 @@ class Editor extends React.PureComponent<Props, State> {
       current,
       editedName: name,
       isEdited: false,
-      isForgetOpen: false
+      isForgetOpen: false,
+      //isItemForgetable: false
     };
   }
 
@@ -197,16 +149,30 @@ class Editor extends React.PureComponent<Props, State> {
           editedName = '';
         }
         let isForgetOpen = false;
+        let isItemForgetable = false;
 
         return {
           current,
           editedName,
           isEdited,
-          isForgetOpen
+          isForgetOpen,
+          //isItemForgetable
         };
       }
     );
   }
+
+  //onForgetAddress = (deleteAddress:KeyringAddress): void => {
+    //console.log(deleteAddress);
+    
+    //if (this.state.isItemForgetable){
+    //  console.log(deleteAddress);
+    //  this.setState({current:deleteAddress});
+    //  this.toggleForget();
+    //}
+    //this.setState({current:deleteAddress});
+    //this.nextState({ current:deleteAddress } as State)
+  //}
 
   onChangeAddress = (publicKey: Uint8Array): void => {
     const current = publicKey && publicKey.length === 32
@@ -218,6 +184,10 @@ class Editor extends React.PureComponent<Props, State> {
 
   onChangeName = (editedName: string): void => {
     this.nextState({ editedName } as State);
+  }
+
+  onChooseItem = (): void => {
+    const { onChooseItem } = this.props;
   }
 
   onCommit = (): void => {
@@ -271,4 +241,4 @@ class Editor extends React.PureComponent<Props, State> {
   }
 }
 
-export default translate(Editor);
+export default translate(List);

@@ -15,7 +15,6 @@ import withObservableBase from '@polkadot/ui-react-rx/with/observableBase';
 
 import Creator from './Creator';
 import Editor from './Editor';
-import Idler from './Idler';
 import translate from './translate';
 import List from './List';
 import Button from '@polkadot/ui-app/Button';
@@ -25,21 +24,18 @@ type Props = I18nProps & {
   basePath: string
 };
 
-type Actions = 'create' | 'edit' | 'idle';
+type Actions = 'create' | 'edit';
 
 type State = {
   action: Actions,
   hidden: Array<string>,
-  items: Array<TabItem>,
-  panelAddress: string,
-  forgetCurrentAddress: boolean
+  items: Array<TabItem>
 };
 
 // FIXME React-router would probably be the best route, not home-grown
 const Components: { [index: string]: React.ComponentType<any> } = {
   'create': Creator,
-  'edit': Editor,
-  'idle': Idler
+  'edit': Editor
 };
 
 class AddressesApp extends React.PureComponent<Props, State> {
@@ -50,8 +46,8 @@ class AddressesApp extends React.PureComponent<Props, State> {
 
     const { allAddresses = {}, t } = props;
     const baseState = Object.keys(allAddresses).length !== 0
-      ? AddressesApp.showIdleState()
-      : AddressesApp.showCreateState();
+      ? AddressesApp.showEditState()
+      : AddressesApp.hideEditState();
 
     this.state = {
       ...baseState,
@@ -63,42 +59,22 @@ class AddressesApp extends React.PureComponent<Props, State> {
         {
           name: 'create',
           text: t('app.create', { defaultValue: 'Add address' })
-        },
-        {
-          name: 'idle',
-          text: t('app.idle', { defaultValue: 'Idle' })
         }
-      ],
-      panelAddress: '',
-      forgetCurrentAddress: false
+      ]
     };
   }
 
   static showEditState () {
     return {
       action: 'edit' as Actions,
-      hidden: ['create', 'idle']
+      hidden: []
     };
   }
 
-  //static hideEditState () {
-  //  return {
-  //    action: 'create' as Actions,
-  //    hidden: ['edit']
-  //  };
-  //}
-
-  static showCreateState () {
+  static hideEditState () {
     return {
       action: 'create' as Actions,
-      hidden: ['edit', 'idle']
-    };
-  }
-
-  static showIdleState () {
-    return {
-      action: 'idle' as Actions,
-      hidden: ['edit', 'create']
+      hidden: ['edit']
     };
   }
 
@@ -108,28 +84,34 @@ class AddressesApp extends React.PureComponent<Props, State> {
     if (hidden.length === 0) {
       return hasAddresses
         ? null
-        : AddressesApp.showCreateState();
+        : AddressesApp.hideEditState();
     }
 
-    //return hasAddresses
-    //  ? AddressesApp.showEditState()
-    //  : null;
+    return hasAddresses
+      ? AddressesApp.showEditState()
+      : null;
   }
 
   render () {
-    const { action, hidden, items, panelAddress, forgetCurrentAddress } = this.state;
+    const { action, hidden, items } = this.state;
     const Component = Components[action];
 
     return (
       <main className='addresses--App'>
-        <header></header>
-        <Component onCreateAddress={this.activateEdit} choosenAddress={panelAddress} readyToForget={forgetCurrentAddress} />
+        <header>
+          <Tabs
+            activeItem={action}
+            hidden={hidden}
+            items={items}
+            onChange={this.onMenuChange}
+          />
+        </header>
+        <Component onCreateAddress={this.activateEdit} />
         <Button
-            onClick={this.openNewAddress}
             isPrimary
             text='New Address'
         />
-        <List onChooseEditPanel={this.editAddress} onChooseForgetPanel={this.forgetAddress}/>
+        <List />
       </main>
     );
   }
@@ -142,27 +124,6 @@ class AddressesApp extends React.PureComponent<Props, State> {
     this.setState(
       AddressesApp.showEditState()
     );
-  }
-
-  openNewAddress = (): void => {
-    this.setState(
-      AddressesApp.showCreateState()
-    );
-  }
-
-  editAddress = (currentAddress:any) => {
-    this.setState({panelAddress:currentAddress});
-    this.setState({forgetCurrentAddress:false});
-    this.setState(
-      AddressesApp.showEditState()
-    );
-  }
-
-  forgetAddress = (deleteAddress:any) => {
-    this.setState({panelAddress:deleteAddress});
-    this.setState({forgetCurrentAddress:true});
-
-    this.setState(AddressesApp.showEditState());
   }
 }
 
